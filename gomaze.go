@@ -7,9 +7,12 @@ import (
 	"strconv"
 )
 
-// 0 ... 道
-// 1 ... 壁
-// 2 ... 伸ばし中
+const (
+	PATH = iota
+	WALL
+	CURRENT
+)
+
 type Point struct {
 	x, y   int
 	status int
@@ -21,66 +24,51 @@ type Maze struct {
 	Height int
 }
 
-func main() {
-
-	// default value
-	h := 30
-	w := 30
-
-	// 引数があればそうする
-	if len(os.Args) > 1 {
-		th, _ := strconv.Atoi(os.Args[1])
-		if th < 5 {
-			h = 5
-		} else {
-			h = th
-		}
-		if len(os.Args) > 2 {
-			tw, _ := strconv.Atoi(os.Args[2])
-			if tw < 5 {
-				w = 5
-			} else {
-				w = tw
-			}
-		}
+func Resize(th, tw int) (int, int) {
+	if th%2 == 0 {
+		th++
+	} else if th < 5 {
+		th = 5
+	}
+	if tw%2 == 0 {
+		tw++
+	} else if tw < 5 {
+		tw = 5
 	}
 
-	if h%2 == 0 {
-		h++
-	}
-	if w%2 == 0 {
-		w++
-	}
+	return th, tw
+}
 
-	// 座標準備
+func NewMaze(h, w int) *Maze {
 	m := &Maze{
-		Height: h,
 		Width:  w,
+		Height: h,
 	}
 
-	// 壁
-	wall := make([]*Point, 0)
-	// 壁候補
-	cand := make([]*Point, 0)
+	m.Generate()
 
+	return m
+}
+
+func (m *Maze) Generate() {
+	wall := make([]*Point, 0) // wall
+	cand := make([]*Point, 0) // wall candidate
+
+	h := m.Height
+	w := m.Width
 	m.Points = make([][]*Point, h)
-	// 迷路生成
 	for i := 0; i < h; i++ {
 		m.Points[i] = make([]*Point, w)
 		for j := 0; j < w; j++ {
-			var s int
-
-			// 外周設定
-			if i == 0 || i == h-1 || j == 0 || j == w-1 {
-				s = 1
-			} else {
-				s = 0
+			p := &Point{
+				x: j,
+				y: i,
 			}
-			p := &Point{j, i, s}
-
 			if i == 0 || i == h-1 || j == 0 || j == w-1 {
+				p.status = WALL
 				wall = append(wall, p)
 			} else {
+				p.status = PATH
 				if i%2 == 0 && j%2 == 0 {
 					cand = append(cand, p)
 				}
@@ -90,28 +78,21 @@ func main() {
 		}
 	}
 
-	// 壁候補がなくなるまでループ
 	for len(cand) > 0 {
-		// 壁候補から、ランダムに壁伸ばし開始点を取得
 		r := rand.Intn(len(cand))
 		cp := cand[r]
 		cand = append(cand[:r], cand[r+1:]...)
-		// fmt.Println(cp)
 
-		if cp.status == 1 {
-		} else {
-			// 拡張中の壁
-			cp.status = 2
+		if cp.status != WALL {
+			cp.status = CURRENT
 			current := make([]*Point, 0)
 			current = append(current, cp)
 
-			// 方向 Up Down Right Left
+			// Up Down Right Left
 			dx := [4]int{1, -1, 0, 0}
 			dy := [4]int{0, 0, 1, -1}
 
-			// 壁にぶつかるまでループ
 			for {
-				// 点から進む方向の候補
 				kw := make([]*Point, 0)
 				kkw := make([]*Point, 0)
 				for i := 0; i < 4; i++ {
@@ -129,40 +110,56 @@ func main() {
 					dp := kw[dr]
 					ddp := kkw[dr]
 
-					if ddp.status == 1 {
+					if ddp.status == WALL {
 						for _, c := range current {
-							c.status = 1
+							c.status = WALL
 						}
-						dp.status = 1
+						dp.status = WALL
 						break
 					} else {
-						dp.status = 2
-						ddp.status = 2
-						current = append(current, dp)
-						current = append(current, ddp)
+						dp.status = CURRENT
+						ddp.status = CURRENT
+						current = append(current, dp, ddp)
 						cp = ddp
 					}
 				} else {
 					ddp := current[len(current)-1]
-					ddp.status = 0
+					ddp.status = PATH
 					dp := current[len(current)-2]
-					dp.status = 0
+					dp.status = PATH
 					current = current[:len(current)-2]
 
 					cp = ddp
 				}
 			}
 		}
+	}
+}
 
+func main() {
+
+	var th, tw int
+	if len(os.Args) > 2 {
+		th, _ = strconv.Atoi(os.Args[1])
+		tw, _ = strconv.Atoi(os.Args[2])
+	} else if len(os.Args) > 1 {
+		th, _ = strconv.Atoi(os.Args[1])
+		tw = 30
+	} else {
+		th = 30
+		tw = 30
 	}
 
-	// 描画
+	h, w := Resize(th, tw)
+
+	m := NewMaze(h, w)
+
 	fmt.Println()
 	for i := 0; i < h; i++ {
 		for j := 0; j < w; j++ {
 			var cell string
 
-			if m.Points[i][j].status == 1 {
+			if m.Points[i][j].status == WALL {
 				if i == 1 && j == 0 {
 					cell = "S "
 				} else if i == h-2 && j == w-1 {
