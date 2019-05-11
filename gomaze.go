@@ -24,8 +24,8 @@ type Maze struct {
 func main() {
 
 	// default value
-	h := 50
-	w := 50
+	h := 30
+	w := 30
 
 	// 引数があればそうする
 	if len(os.Args) > 1 {
