@@ -12,3 +12,7 @@ build:
 clean:
 	rm -rf build
 	go clean
+
+.PHONY: test
+test: build
+	go test -v
