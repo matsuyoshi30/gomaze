@@ -23,4 +23,5 @@ jobs:
 
       # specify any bash command here prefixed with `run: `
       - run: git clone https://github.com/matsuyoshi30/gomaze matsuyoshi30/gomaze
+      - run: chmod 755 matsuyoshi30/gomaze/test/default.sh
       - run: make test
