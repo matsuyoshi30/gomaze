@@ -1,4 +1,4 @@
-# Maze written in Go
+# Maze written in Go [![circleci](https://circleci.com/gh/matsuyoshi30/gomaze.svg?style=shield&circle-token=99ca77ba57ac5cdd3276aade4335a04c5f68879a)](https://circleci.com/gh/matsuyoshi30/gomaze)
 
 ### Usage
 
