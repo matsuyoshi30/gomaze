@@ -165,7 +165,8 @@ func main() {
 				} else if i == h-2 && j == w-1 {
 					cell = " G"
 				} else {
-					cell = "\x1b[7m  \x1b[0m"
+					// cell = "\x1b[7m  \x1b[0m"
+					cell = "##"
 				}
 			} else {
 				cell = "  "
