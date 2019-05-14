@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
-	"strconv"
+
+	"github.com/urfave/cli"
 )
 
 const (
@@ -159,20 +161,37 @@ func (m *Maze) printMaze(h, w int) {
 }
 
 func main() {
-	var th, tw int
-	if len(os.Args) > 2 {
-		th, _ = strconv.Atoi(os.Args[1])
-		tw, _ = strconv.Atoi(os.Args[2])
-	} else if len(os.Args) > 1 {
-		th, _ = strconv.Atoi(os.Args[1])
-		tw = 30
-	} else {
-		th = 30
-		tw = 30
+	app := cli.NewApp()
+	app.Name = "gomaze"
+	app.Usage = "Generate maze"
+	app.Version = "0.1.0"
+	app.Flags = []cli.Flag{
+		cli.IntFlag{
+			Name:  "height",
+			Usage: "Set the height of maze",
+			Value: 30,
+		},
+		cli.IntFlag{
+			Name:  "width",
+			Usage: "Set the width of maze",
+			Value: 30,
+		},
 	}
 
-	h, w := Resize(th, tw)
+	app.Action = func(c *cli.Context) error {
+		th := c.GlobalInt("height")
+		tw := c.GlobalInt("width")
 
-	m := NewMaze(h, w)
-	m.printMaze(h, w)
+		h, w := Resize(th, tw)
+
+		m := NewMaze(h, w)
+		m.printMaze(h, w)
+
+		return nil
+	}
+
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
