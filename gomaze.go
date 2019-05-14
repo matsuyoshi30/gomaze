@@ -136,29 +136,10 @@ func (m *Maze) Generate() {
 	}
 }
 
-func main() {
-
-	var th, tw int
-	if len(os.Args) > 2 {
-		th, _ = strconv.Atoi(os.Args[1])
-		tw, _ = strconv.Atoi(os.Args[2])
-	} else if len(os.Args) > 1 {
-		th, _ = strconv.Atoi(os.Args[1])
-		tw = 30
-	} else {
-		th = 30
-		tw = 30
-	}
-
-	h, w := Resize(th, tw)
-
-	m := NewMaze(h, w)
-
-	fmt.Println()
+func (m *Maze) printMaze(h, w int) {
 	for i := 0; i < h; i++ {
 		for j := 0; j < w; j++ {
 			var cell string
-
 			if m.Points[i][j].status == WALL {
 				if i == 1 && j == 0 {
 					cell = "S "
@@ -175,4 +156,23 @@ func main() {
 		}
 		fmt.Println()
 	}
+}
+
+func main() {
+	var th, tw int
+	if len(os.Args) > 2 {
+		th, _ = strconv.Atoi(os.Args[1])
+		tw, _ = strconv.Atoi(os.Args[2])
+	} else if len(os.Args) > 1 {
+		th, _ = strconv.Atoi(os.Args[1])
+		tw = 30
+	} else {
+		th = 30
+		tw = 30
+	}
+
+	h, w := Resize(th, tw)
+
+	m := NewMaze(h, w)
+	m.printMaze(h, w)
 }
