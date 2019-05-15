@@ -138,7 +138,7 @@ func (m *Maze) Generate() {
 	}
 }
 
-func (m *Maze) printMaze(h, w int) {
+func (m *Maze) printMaze(h, w int, format string) {
 	for i := 0; i < h; i++ {
 		for j := 0; j < w; j++ {
 			var cell string
@@ -148,8 +148,11 @@ func (m *Maze) printMaze(h, w int) {
 				} else if i == h-2 && j == w-1 {
 					cell = " G"
 				} else {
-					// cell = "\x1b[7m  \x1b[0m"
-					cell = "##"
+					if format == "bold" {
+						cell = "\033[07m  \033[00m"
+					} else if format == "normal" {
+						cell = "||"
+					}
 				}
 			} else {
 				cell = "  "
@@ -176,16 +179,22 @@ func main() {
 			Usage: "Set the width of maze",
 			Value: 30,
 		},
+		cli.StringFlag{
+			Name:  "format",
+			Usage: "Format output, normal or bold",
+			Value: "normal",
+		},
 	}
 
 	app.Action = func(c *cli.Context) error {
 		th := c.GlobalInt("height")
 		tw := c.GlobalInt("width")
+		wi := c.GlobalString("format")
 
 		h, w := Resize(th, tw)
 
 		m := NewMaze(h, w)
-		m.printMaze(h, w)
+		m.printMaze(h, w, wi)
 
 		return nil
 	}
