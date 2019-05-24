@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"time"
 
 	"github.com/urfave/cli"
 )
@@ -41,18 +42,18 @@ func Resize(th, tw int) (int, int) {
 	return th, tw
 }
 
-func NewMaze(h, w int) *Maze {
+func NewMaze(h, w int, s bool) *Maze {
 	m := &Maze{
 		Width:  w,
 		Height: h,
 	}
 
-	m.Generate()
+	m.Generate(s)
 
 	return m
 }
 
-func (m *Maze) Generate() {
+func (m *Maze) Generate(seed bool) {
 	wall := make([]*Point, 0) // wall
 	cand := make([]*Point, 0) // wall candidate
 
@@ -81,6 +82,11 @@ func (m *Maze) Generate() {
 	}
 
 	for len(cand) > 0 {
+		if seed {
+			rand.NewSource(1)
+		} else {
+			rand.Seed(time.Now().UnixNano())
+		}
 		r := rand.Intn(len(cand))
 		cp := cand[r]
 		cand = append(cand[:r], cand[r+1:]...)
@@ -179,6 +185,10 @@ func main() {
 			Usage: "Set the width of maze",
 			Value: 30,
 		},
+		cli.BoolFlag{
+			Name:  "seed",
+			Usage: "Set seed for generating specific maze",
+		},
 		cli.StringFlag{
 			Name:  "format",
 			Usage: "Format output, normal or bold",
@@ -189,11 +199,12 @@ func main() {
 	app.Action = func(c *cli.Context) error {
 		th := c.GlobalInt("height")
 		tw := c.GlobalInt("width")
+		se := c.GlobalBool("seed")
 		wi := c.GlobalString("format")
 
 		h, w := Resize(th, tw)
 
-		m := NewMaze(h, w)
+		m := NewMaze(h, w, se)
 		m.printMaze(h, w, wi)
 
 		return nil

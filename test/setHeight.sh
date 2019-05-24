@@ -1,2 +1,2 @@
 #!/bin/bash
-gomaze --height 10
+gomaze --seed --height 10
