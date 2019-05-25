@@ -10,6 +10,8 @@ const (
 	PATH = iota
 	WALL
 	CURRENT
+	START
+	GOAL
 )
 
 type Point struct {
@@ -25,13 +27,14 @@ type Maze struct {
 	Format string
 }
 
-func NewMaze(h, w int, s bool, f string) *Maze {
+func NewMaze(h int, w int, s bool, f string) *Maze {
 	m := &Maze{
 		Width:  w,
 		Height: h,
 		Seed:   s,
 		Format: f,
 	}
+	m.Resize()
 
 	return m
 }
@@ -63,7 +66,14 @@ func (m *Maze) Generate() {
 				x: j,
 				y: i,
 			}
-			if i == 0 || i == h-1 || j == 0 || j == w-1 {
+
+			if i == 1 && j == 0 {
+				p.status = START
+				wall = append(wall, p)
+			} else if i == h-2 && j == w-1 {
+				p.status = GOAL
+				wall = append(wall, p)
+			} else if i == 0 || i == h-1 || j == 0 || j == w-1 {
 				p.status = WALL
 				wall = append(wall, p)
 			} else {
@@ -144,17 +154,15 @@ func (m *Maze) printMaze(h, w int, format string) {
 	for i := 0; i < h; i++ {
 		for j := 0; j < w; j++ {
 			var cell string
-			if m.Points[i][j].status == WALL {
-				if i == 1 && j == 0 {
-					cell = "S "
-				} else if i == h-2 && j == w-1 {
-					cell = " G"
-				} else {
-					if format == "bold" {
-						cell = "\033[07m  \033[00m"
-					} else if format == "normal" {
-						cell = "||"
-					}
+			if m.Points[i][j].status == START {
+				cell = "S "
+			} else if m.Points[i][j].status == GOAL {
+				cell = " G"
+			} else if m.Points[i][j].status == WALL {
+				if format == "bold" {
+					cell = "\033[07m  \033[00m"
+				} else if format == "normal" {
+					cell = "||"
 				}
 			} else {
 				cell = "  "
