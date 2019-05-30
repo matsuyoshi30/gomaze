@@ -24,10 +24,10 @@ type Maze struct {
 	Width  int
 	Height int
 	Seed   bool
-	Format string
+	Format bool
 }
 
-func NewMaze(h int, w int, s bool, f string) *Maze {
+func NewMaze(h int, w int, s bool, f bool) *Maze {
 	m := &Maze{
 		Width:  w,
 		Height: h,
@@ -35,6 +35,7 @@ func NewMaze(h int, w int, s bool, f string) *Maze {
 		Format: f,
 	}
 	m.Resize()
+	m.Generate()
 
 	return m
 }
@@ -150,18 +151,21 @@ func (m *Maze) Generate() {
 	}
 }
 
-func (m *Maze) printMaze(h, w int, format string) {
-	for i := 0; i < h; i++ {
-		for j := 0; j < w; j++ {
+func (m *Maze) printMaze() {
+	format := m.Format
+
+	for i, row := range m.Points {
+		for j := range row {
+			sts := m.Points[i][j].status
 			var cell string
-			if m.Points[i][j].status == START {
+			if sts == START {
 				cell = "S "
-			} else if m.Points[i][j].status == GOAL {
+			} else if sts == GOAL {
 				cell = " G"
-			} else if m.Points[i][j].status == WALL {
-				if format == "bold" {
+			} else if sts == WALL {
+				if format {
 					cell = "\033[07m  \033[00m"
-				} else if format == "normal" {
+				} else {
 					cell = "||"
 				}
 			} else {

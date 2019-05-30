@@ -2,20 +2,17 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/gdamore/tcell"
-	"time"
 )
 
 type Game struct {
 	screen tcell.Screen
 	maze   *Maze
 	event  chan Event
-	ticker *time.Ticker
 }
 
-type Event struct {
-	Type string
-}
+type Event string
 
 func (g *Game) display() {
 	g.screen.Clear()
@@ -48,13 +45,13 @@ func (g *Game) Loop() error {
 
 		select {
 		case ev := <-g.event:
-			switch ev.Type {
-			case "done":
+			switch ev {
+			case DONE:
 				return nil
 			default:
-				return fmt.Errorf(ev.Type)
+				return fmt.Errorf("%v", ev)
 			}
-		case <-g.ticker.C:
+		default:
 			g.screen.Show()
 		}
 	}
