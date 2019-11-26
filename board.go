@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"time"
 )
@@ -41,16 +42,8 @@ func NewMaze(h int, w int, s bool, f bool) *Maze {
 }
 
 func (m *Maze) Resize() {
-	if m.Height%2 == 0 {
-		m.Height++
-	} else if m.Height < 5 {
-		m.Height = 5
-	}
-	if m.Width%2 == 0 {
-		m.Width++
-	} else if m.Width < 5 {
-		m.Width = 5
-	}
+	m.Height = int(math.Max(float64(m.Height*2/2+1), 5.0))
+	m.Width = int(math.Max(float64(m.Width*2/2+1), 5.0))
 }
 
 func (m *Maze) Generate() {
@@ -90,7 +83,7 @@ func (m *Maze) Generate() {
 
 	for len(cand) > 0 {
 		if m.Seed {
-			rand.NewSource(1)
+			rand.NewSource(1) // for test
 		} else {
 			rand.Seed(time.Now().UnixNano())
 		}
