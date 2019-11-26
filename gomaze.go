@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -10,24 +9,25 @@ import (
 	"github.com/urfave/cli"
 )
 
-func initScreen() tcell.Screen {
+func initScreen() (tcell.Screen, error) {
 	encoding.Register()
 	s, err := tcell.NewScreen()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
+		return nil, err
 	}
 	if err := s.Init(); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
+		return nil, err
 	}
 	s.EnableMouse()
 
-	return s
+	return s, nil
 }
 
 func startGame(height int, width int, seed bool, format bool) error {
-	s := initScreen()
+	s, err := initScreen()
+	if err != nil {
+		return err
+	}
 	defer s.Fini()
 
 	w, h := s.Size()
