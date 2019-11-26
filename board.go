@@ -149,8 +149,9 @@ func (m *Maze) printMaze() {
 
 	for i, row := range m.Points {
 		for j := range row {
+			cell := "  "
+
 			sts := m.Points[i][j].status
-			var cell string
 			if sts == START {
 				cell = "S "
 			} else if sts == GOAL {
@@ -161,9 +162,8 @@ func (m *Maze) printMaze() {
 				} else {
 					cell = "||"
 				}
-			} else {
-				cell = "  "
 			}
+
 			fmt.Printf("%s", cell)
 		}
 		fmt.Println()
