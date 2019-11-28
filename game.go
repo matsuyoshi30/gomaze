@@ -14,6 +14,12 @@ var st = tcell.StyleDefault.Foreground(tcell.ColorWhite)
 func (g *Game) display() {
 	g.screen.Clear()
 
+	wall := tcell.RuneVLine
+	path := ' '
+	if g.maze.Format {
+		wall = tcell.RuneBlock
+	}
+
 	for i, row := range g.maze.Points {
 		for j, p := range row {
 			if p.status == START {
@@ -23,11 +29,11 @@ func (g *Game) display() {
 				g.screen.SetContent(j*2, i, ' ', nil, st)
 				g.screen.SetContent(j*2+1, i, 'G', nil, st)
 			} else if p.status == WALL {
-				g.screen.SetContent(j*2, i, tcell.RuneVLine, nil, st)
-				g.screen.SetContent(j*2+1, i, tcell.RuneVLine, nil, st)
+				g.screen.SetContent(j*2, i, wall, nil, st)
+				g.screen.SetContent(j*2+1, i, wall, nil, st)
 			} else {
-				g.screen.SetContent(j*2, i, ' ', nil, st)
-				g.screen.SetContent(j*2+1, i, ' ', nil, st)
+				g.screen.SetContent(j*2, i, path, nil, st)
+				g.screen.SetContent(j*2+1, i, path, nil, st)
 			}
 		}
 	}
