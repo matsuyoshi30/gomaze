@@ -1,47 +1,41 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gdamore/tcell"
-	"github.com/gdamore/tcell/encoding"
 	"github.com/urfave/cli"
 )
 
 func initScreen() (tcell.Screen, error) {
-	encoding.Register()
+	tcell.SetEncodingFallback(tcell.EncodingFallbackASCII)
 	s, err := tcell.NewScreen()
 	if err != nil {
 		return nil, err
 	}
-	if err := s.Init(); err != nil {
+	if err = s.Init(); err != nil {
 		return nil, err
 	}
-	s.EnableMouse()
 
 	return s, nil
 }
 
-func startGame(height int, width int, seed bool, format bool) error {
+func startGame(width, height int, seed bool, format bool) error {
 	s, err := initScreen()
 	if err != nil {
 		return err
 	}
-	defer s.Fini()
 
 	w, h := s.Size()
-	m := NewMaze(h-4, (w-4)/2, seed, format)
-
-	event := make(chan Event)
+	m := NewMaze(w/2-10, h-10, seed, format)
 
 	game := Game{
 		screen: s,
 		maze:   m,
-		event:  event,
 	}
-
-	go inputLoop(s, event)
 
 	return game.Loop()
 }
@@ -93,16 +87,16 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) error {
-		th := c.Int("height")
 		tw := c.Int("width")
+		th := c.Int("height")
 		se := c.Bool("seed")
 		sc := c.Bool("screen")
 		wi := c.Bool("format")
 
 		if sc {
-			return startGame(th, tw, se, wi)
+			return startGame(tw, th, se, wi)
 		} else {
-			m := NewMaze(th, tw, se, wi)
+			m := NewMaze(tw, th, se, wi)
 			m.printMaze()
 
 			return nil
@@ -110,6 +104,10 @@ func main() {
 	}
 
 	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
+}
+
+func wait() {
+	time.Sleep(time.Second * 2)
 }

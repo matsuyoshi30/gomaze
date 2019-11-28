@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"math/rand"
 	"time"
 )
@@ -28,8 +27,8 @@ type Maze struct {
 	Format bool
 }
 
-func NewMaze(h int, w int, s bool, f bool) *Maze {
-	m := &Maze{
+func NewMaze(w int, h int, s bool, f bool) *Maze {
+	m := Maze{
 		Width:  w,
 		Height: h,
 		Seed:   s,
@@ -38,12 +37,23 @@ func NewMaze(h int, w int, s bool, f bool) *Maze {
 	m.Resize()
 	m.Generate()
 
-	return m
+	return &m
 }
 
 func (m *Maze) Resize() {
-	m.Height = int(math.Max(float64(m.Height*2/2+1), 5.0))
-	m.Width = int(math.Max(float64(m.Width*2/2+1), 5.0))
+	if m.Height < 5 {
+		m.Height = 5
+	}
+	if m.Width < 5 {
+		m.Width = 5
+	}
+
+	if m.Height%2 == 0 {
+		m.Height--
+	}
+	if m.Width%2 == 0 {
+		m.Width--
+	}
 }
 
 func (m *Maze) Generate() {
@@ -89,7 +99,7 @@ func (m *Maze) Generate() {
 		}
 		r := rand.Intn(len(cand))
 		cp := cand[r]
-		cand = append(cand[:r], cand[r+1:]...)
+		cand = append(cand[:r], cand[r+1:]...) // remove cp
 
 		if cp.status != WALL {
 			cp.status = CURRENT
@@ -104,11 +114,20 @@ func (m *Maze) Generate() {
 				kw := make([]*Point, 0)
 				kkw := make([]*Point, 0)
 				for i := 0; i < 4; i++ {
-					np := m.Points[cp.y+dy[i]][cp.x+dx[i]]
-					nnp := m.Points[cp.y+dy[i]*2][cp.x+dx[i]*2]
-					if np.status == 0 && nnp.status != 2 {
-						kw = append(kw, np)
-						kkw = append(kkw, nnp)
+					_y := cp.y + dy[i]
+					_x := cp.x + dx[i]
+					if 0 <= _y && _y < h && 0 <= _x && _x < w {
+						np := m.Points[_y][_x]
+						__y := cp.y + dy[i]*2
+						__x := cp.x + dx[i]*2
+						if 0 <= __y && __y < h && 0 <= __x && __x < w {
+							nnp := m.Points[__y][__x]
+
+							if np.status == PATH && nnp.status != CURRENT {
+								kw = append(kw, np)
+								kkw = append(kkw, nnp)
+							}
+						}
 					}
 				}
 
@@ -147,11 +166,11 @@ func (m *Maze) Generate() {
 func (m *Maze) printMaze() {
 	format := m.Format
 
-	for i, row := range m.Points {
-		for j := range row {
+	for _, row := range m.Points {
+		for _, p := range row {
 			cell := "  "
 
-			sts := m.Points[i][j].status
+			sts := p.status
 			if sts == START {
 				cell = "S "
 			} else if sts == GOAL {
