@@ -88,11 +88,16 @@ func (m *Maze) Generate() {
 			m.Points[i][j] = p
 		}
 	}
+
 	if m.Seed {
 		rand.NewSource(1) // for test
 	} else {
 		rand.Seed(time.Now().UnixNano())
 	}
+
+	// Up Down Right Left
+	dx := [4]int{1, -1, 0, 0}
+	dy := [4]int{0, 0, 1, -1}
 
 	for len(cand) > 0 {
 		r := rand.Intn(len(cand))
@@ -103,10 +108,6 @@ func (m *Maze) Generate() {
 			cp.status = CURRENT
 			current := make([]*Point, 0)
 			current = append(current, cp)
-
-			// Up Down Right Left
-			dx := [4]int{1, -1, 0, 0}
-			dy := [4]int{0, 0, 1, -1}
 
 			for {
 				kw := make([]*Point, 0)  // 1つ隣
