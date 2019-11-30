@@ -1,2 +1,2 @@
 #!/bin/bash
-gomaze --seed
+../build/gomaze --seed

@@ -1,2 +1,2 @@
 #!/bin/bash
-gomaze --seed --width 10
+../build/gomaze --seed --width 10

@@ -57,27 +57,25 @@ func (m *Maze) Resize() {
 }
 
 func (m *Maze) Generate() {
+	h := m.Height
+	w := m.Width
+
 	wall := make([]*Point, 0) // wall
 	cand := make([]*Point, 0) // wall candidate
 
-	h := m.Height
-	w := m.Width
-	m.Points = make([][]*Point, h)
-	for i := 0; i < h; i++ {
-		m.Points[i] = make([]*Point, w)
-		for j := 0; j < w; j++ {
-			p := &Point{
-				x: j,
-				y: i,
-			}
+	m.Points = make([][]*Point, m.Height)
+	for i := 0; i < m.Height; i++ {
+		m.Points[i] = make([]*Point, m.Width)
+		for j := 0; j < m.Width; j++ {
+			p := &Point{x: j, y: i}
 
 			if i == 1 && j == 0 {
 				p.status = START
 				wall = append(wall, p)
-			} else if i == h-2 && j == w-1 {
+			} else if i == m.Height-2 && j == m.Width-1 {
 				p.status = GOAL
 				wall = append(wall, p)
-			} else if i == 0 || i == h-1 || j == 0 || j == w-1 {
+			} else if i == 0 || i == m.Height-1 || j == 0 || j == m.Width-1 {
 				p.status = WALL
 				wall = append(wall, p)
 			} else {
@@ -90,13 +88,13 @@ func (m *Maze) Generate() {
 			m.Points[i][j] = p
 		}
 	}
+	if m.Seed {
+		rand.NewSource(1) // for test
+	} else {
+		rand.Seed(time.Now().UnixNano())
+	}
 
 	for len(cand) > 0 {
-		if m.Seed {
-			rand.NewSource(1) // for test
-		} else {
-			rand.Seed(time.Now().UnixNano())
-		}
 		r := rand.Intn(len(cand))
 		cp := cand[r]
 		cand = append(cand[:r], cand[r+1:]...) // remove cp
@@ -111,8 +109,8 @@ func (m *Maze) Generate() {
 			dy := [4]int{0, 0, 1, -1}
 
 			for {
-				kw := make([]*Point, 0)
-				kkw := make([]*Point, 0)
+				kw := make([]*Point, 0)  // 1つ隣
+				kkw := make([]*Point, 0) // 2つ隣
 				for i := 0; i < 4; i++ {
 					_y := cp.y + dy[i]
 					_x := cp.x + dx[i]
@@ -123,7 +121,7 @@ func (m *Maze) Generate() {
 						if 0 <= __y && __y < h && 0 <= __x && __x < w {
 							nnp := m.Points[__y][__x]
 
-							if np.status == PATH && nnp.status != CURRENT {
+							if np.status == PATH && nnp.status != CURRENT { // 1つ隣が道で、2つ隣が現在地じゃない
 								kw = append(kw, np)
 								kkw = append(kkw, nnp)
 							}
@@ -133,9 +131,8 @@ func (m *Maze) Generate() {
 
 				if len(kw) > 0 {
 					// 候補から進む方向をランダムに選定
-					dr := rand.Intn(len(kw))
-					dp := kw[dr]
-					ddp := kkw[dr]
+					dp := kw[rand.Intn(len(kw))]
+					ddp := kkw[rand.Intn(len(kw))]
 
 					if ddp.status == WALL {
 						for _, c := range current {
@@ -150,13 +147,15 @@ func (m *Maze) Generate() {
 						cp = ddp
 					}
 				} else {
-					ddp := current[len(current)-1]
-					ddp.status = PATH
-					dp := current[len(current)-2]
-					dp.status = PATH
-					current = current[:len(current)-2]
+					if len(current)-2 > 0 {
+						ddp := current[len(current)-1]
+						ddp.status = PATH
+						dp := current[len(current)-2]
+						dp.status = PATH
+						current = current[:len(current)-2]
 
-					cp = ddp
+						cp = ddp
+					}
 				}
 			}
 		}
