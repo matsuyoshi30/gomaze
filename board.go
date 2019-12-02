@@ -104,8 +104,9 @@ func (m *Maze) Generate() {
 
 				if len(kw) > 0 {
 					// 候補から進む方向をランダムに選定
-					dp := kw[rand.Intn(len(kw))]
-					ddp := kkw[rand.Intn(len(kw))]
+					_r := rand.Intn(len(kw))
+					dp := kw[_r]
+					ddp := kkw[_r]
 
 					if ddp.status == WALL { // 進行方向の2つ先が壁
 						for _, c := range current { // 今まで掘っていた線を wall に
@@ -120,14 +121,10 @@ func (m *Maze) Generate() {
 						cp = ddp
 					}
 				} else {
-					if len(current)-2 > 0 {
-						ddp := current[len(current)-1]
-						ddp.status = PATH
-						dp := current[len(current)-2]
+					if len(current)-1 > 0 {
+						dp := current[len(current)-1]
 						dp.status = PATH
-						current = current[:len(current)-2]
-
-						cp = ddp
+						current = current[:len(current)-1]
 					}
 				}
 			}
