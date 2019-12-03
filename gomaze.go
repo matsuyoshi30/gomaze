@@ -30,7 +30,7 @@ func startGame(width, height int, seed bool, format bool) error {
 	}
 
 	w, h := s.Size()
-	m := NewMaze(w/2-10, h-10, seed, format)
+	m := NewMaze(w/2, h, seed, format)
 
 	game := Game{
 		screen: s,
