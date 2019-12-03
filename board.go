@@ -120,11 +120,9 @@ func (m *Maze) Generate() {
 						current = append(current, dp, ddp)
 						cp = ddp
 					}
-				} else {
-					if len(current)-1 > 0 {
-						dp := current[len(current)-1]
-						dp.status = PATH
-						current = current[:len(current)-1]
+				} else { // 候補がない
+					for _, c := range current {
+						c.status = WALL
 					}
 				}
 			}
