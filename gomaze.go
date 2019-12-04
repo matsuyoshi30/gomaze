@@ -46,29 +46,29 @@ func main() {
 	app.Usage = "Generate maze"
 	app.Version = "0.1.0"
 	app.Flags = []cli.Flag{
-		cli.IntFlag{
+		&cli.IntFlag{
 			Name:  "height",
 			Usage: "Set the height of maze",
 			Value: 30,
 		},
-		cli.IntFlag{
+		&cli.IntFlag{
 			Name:  "width",
 			Usage: "Set the width of maze",
 			Value: 30,
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "seed",
 			Usage: "Set seed for generating specific maze",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "screen",
 			Usage: "TUI mode",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "format",
 			Usage: "Format output bold",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name: "debug",
 		},
 	}
