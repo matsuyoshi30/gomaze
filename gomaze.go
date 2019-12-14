@@ -28,6 +28,7 @@ func startGame(width, height int, seed bool, format bool) error {
 	if err != nil {
 		return err
 	}
+	defer s.Fini()
 
 	w, h := s.Size()
 	m := NewMaze(w/2, h, seed, format)
