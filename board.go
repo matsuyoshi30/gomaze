@@ -20,11 +20,12 @@ type Point struct {
 }
 
 type Maze struct {
-	Points [][]*Point
-	Width  int
-	Height int
-	Seed   bool
-	Format bool
+	Points  [][]*Point
+	Width   int
+	Height  int
+	Current Point
+	Seed    bool
+	Format  bool
 }
 
 func NewMaze(w int, h int, s bool, f bool) *Maze {
@@ -37,7 +38,23 @@ func NewMaze(w int, h int, s bool, f bool) *Maze {
 	m.Resize()
 	m.Generate()
 
+	m.SetCurrent(1, 1)
+
 	return &m
+}
+
+func (m *Maze) SetCurrent(x, y int) {
+	m.Points[y][x].status = CURRENT
+	m.Current.x = x
+	m.Current.y = y
+}
+
+func (m *Maze) UnsetCurrent(x, y int) {
+	m.Points[y][x].status = PATH
+}
+
+func (m *Maze) GetCurrent() (int, int) {
+	return m.Current.x, m.Current.y
 }
 
 func (m *Maze) Resize() {
@@ -178,10 +195,80 @@ func (m *Maze) printMaze() {
 				} else {
 					cell = "||"
 				}
+			} else if sts == CURRENT {
+				cell = "@@"
 			}
 
 			fmt.Printf("%s", cell)
 		}
 		fmt.Println()
 	}
+}
+
+func (m *Maze) CheckMaze(e Event) bool {
+	x, y := m.GetCurrent()
+
+	switch e {
+	case RIGHT:
+		if m.Points[y][x+1].status == GOAL { // goal
+			return true
+		}
+		if x+1 > m.Width {
+			return false
+		}
+		if m.Points[y][x+1].status == PATH {
+			return true
+		}
+		return false
+	case LEFT:
+		if x-1 < 0 {
+			return false
+		}
+		if m.Points[y][x-1].status == PATH {
+			return true
+		}
+		return false
+	case UP:
+		if y-1 < 0 {
+			return false
+		}
+		if m.Points[y-1][x].status == PATH {
+			return true
+		}
+		return false
+	case DOWN:
+		if y+1 > m.Height {
+			return false
+		}
+		if m.Points[y+1][x].status == PATH {
+			return true
+		}
+		return false
+	}
+
+	return false
+}
+
+func (m *Maze) MoveCurrent(e Event) {
+	x, y := m.GetCurrent()
+	m.UnsetCurrent(x, y)
+
+	switch e {
+	case RIGHT:
+		m.SetCurrent(x+1, y)
+	case LEFT:
+		m.SetCurrent(x-1, y)
+	case UP:
+		m.SetCurrent(x, y-1)
+	case DOWN:
+		m.SetCurrent(x, y+1)
+	}
+}
+
+func (m *Maze) CheckGoal() bool {
+	x, y := m.GetCurrent()
+	if m.Points[y][x+1].status == GOAL {
+		return true
+	}
+	return false
 }

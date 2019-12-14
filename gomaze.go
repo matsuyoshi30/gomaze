@@ -23,11 +23,12 @@ func initScreen() (tcell.Screen, error) {
 	return s, nil
 }
 
-func startGame(width, height int, seed bool, format bool) error {
+func startGame(width, height int, seed bool, format bool) (Result, int, int, error) {
 	s, err := initScreen()
 	if err != nil {
-		return err
+		return STOPPED, 0, 0, err
 	}
+	defer s.Fini()
 
 	w, h := s.Size()
 	m := NewMaze(w/2, h, seed, format)
@@ -37,7 +38,8 @@ func startGame(width, height int, seed bool, format bool) error {
 		maze:   m,
 	}
 
-	return game.Loop()
+	res, err := game.Loop()
+	return res, w / 2, h, err
 }
 
 func main() {
@@ -94,7 +96,20 @@ func main() {
 		wi := c.Bool("format")
 
 		if sc {
-			return startGame(tw, th, se, wi)
+			start := time.Now()
+			res, w, h, err := startGame(tw, th, se, wi)
+			if err != nil {
+				return err
+			}
+			end := time.Now()
+
+			if res == GOALED {
+				fmt.Println("Congrats!")
+				fmt.Printf("[Maze size] Width: %d / Height: %d\n", w, h)
+				fmt.Printf("[Your time] %s\n", end.Sub(start))
+			}
+
+			return nil
 		} else {
 			m := NewMaze(tw, th, se, wi)
 			m.printMaze()
