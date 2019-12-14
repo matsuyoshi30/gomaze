@@ -54,7 +54,14 @@ const (
 	DOWN
 )
 
-func (g *Game) Loop() error {
+type Result int
+
+const (
+	GOALED Result = iota
+	STOPPED
+)
+
+func (g *Game) Loop() (Result, error) {
 	e := make(chan Event)
 	go input(g.screen, e)
 
@@ -65,10 +72,10 @@ func (g *Game) Loop() error {
 		case ev := <-e:
 			switch ev {
 			case EXIT:
-				return nil
+				return STOPPED, nil
 			case RIGHT:
 				if g.maze.CheckGoal() { // gaol
-					return nil
+					return GOALED, nil
 				}
 				if g.maze.CheckMaze(RIGHT) {
 					g.maze.MoveCurrent(RIGHT)
@@ -89,7 +96,7 @@ func (g *Game) Loop() error {
 		}
 	}
 
-	return nil
+	return STOPPED, nil
 }
 
 func input(s tcell.Screen, e chan<- Event) {
