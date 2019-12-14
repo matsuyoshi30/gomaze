@@ -56,4 +56,6 @@ S       ||      ||  ||
 ||||||||||||||||||||||
 ```
 
+You can play the maze with `--screen` and use arrow keys.
 
+![](./_resource/sample.gif)
