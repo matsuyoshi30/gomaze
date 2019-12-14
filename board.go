@@ -210,6 +210,9 @@ func (m *Maze) CheckMaze(e Event) bool {
 
 	switch e {
 	case RIGHT:
+		if m.Points[y][x+1].status == GOAL { // goal
+			return true
+		}
 		if x+1 > m.Width {
 			return false
 		}
@@ -260,4 +263,12 @@ func (m *Maze) MoveCurrent(e Event) {
 	case DOWN:
 		m.SetCurrent(x, y+1)
 	}
+}
+
+func (m *Maze) CheckGoal() bool {
+	x, y := m.GetCurrent()
+	if m.Points[y][x+1].status == GOAL {
+		return true
+	}
+	return false
 }

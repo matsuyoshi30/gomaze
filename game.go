@@ -67,6 +67,9 @@ func (g *Game) Loop() error {
 			case EXIT:
 				return nil
 			case RIGHT:
+				if g.maze.CheckGoal() { // gaol
+					return nil
+				}
 				if g.maze.CheckMaze(RIGHT) {
 					g.maze.MoveCurrent(RIGHT)
 				}
