@@ -210,7 +210,7 @@ func (m *Maze) CheckMaze(e Event) bool {
 
 	switch e {
 	case RIGHT:
-		if x+1 > m.Width/2 {
+		if x+1 > m.Width {
 			return false
 		}
 		if m.Points[y][x+1].status == PATH {
