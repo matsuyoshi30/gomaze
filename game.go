@@ -1,15 +1,23 @@
 package main
 
 import (
+	"time"
+
 	"github.com/gdamore/tcell"
 )
 
 type Game struct {
 	screen tcell.Screen
 	maze   *Maze
+	bfs    bool
+	dfs    bool
+	queue  []*Point
+	stack  []*Point
+	ticker *time.Ticker
 }
 
 var st = tcell.StyleDefault.Foreground(tcell.ColorWhite)
+var ans = tcell.StyleDefault.Foreground(tcell.ColorLightGreen)
 
 func (g *Game) display() {
 	g.screen.Clear()
@@ -34,6 +42,12 @@ func (g *Game) display() {
 			} else if p.status == CURRENT {
 				g.screen.SetContent(j*2, i, '@', nil, st)
 				g.screen.SetContent(j*2+1, i, '@', nil, st)
+			} else if p.status == VISITED {
+				g.screen.SetContent(j*2, i, '#', nil, st)
+				g.screen.SetContent(j*2+1, i, '#', nil, st)
+			} else if p.status == ROUTE {
+				g.screen.SetContent(j*2, i, '#', nil, ans)
+				g.screen.SetContent(j*2+1, i, '#', nil, ans)
 			} else {
 				g.screen.SetContent(j*2, i, path, nil, st)
 				g.screen.SetContent(j*2+1, i, path, nil, st)
@@ -59,11 +73,22 @@ type Result int
 const (
 	GOALED Result = iota
 	STOPPED
+	NOTGOALED
 )
 
 func (g *Game) Loop() (Result, error) {
 	e := make(chan Event)
 	go input(g.screen, e)
+
+	if g.bfs {
+		g.queue = append(g.queue, g.maze.Points[1][1])
+		g.maze.Points[1][1].status = VISITED
+		g.maze.Points[1][1].cost = 1
+	} else {
+		g.stack = append(g.stack, g.maze.Points[1][1])
+		g.maze.Points[1][1].status = VISITED
+		g.maze.Points[1][1].cost = 1
+	}
 
 	for {
 		g.display()
@@ -93,6 +118,10 @@ func (g *Game) Loop() (Result, error) {
 					g.maze.MoveCurrent(DOWN)
 				}
 			}
+		case <-g.ticker.C:
+			if g.next() == GOALED {
+				return GOALED, nil
+			}
 		}
 	}
 
@@ -120,6 +149,77 @@ func input(s tcell.Screen, e chan<- Event) {
 			s.Sync()
 		default:
 			continue
+		}
+	}
+}
+
+func (g *Game) next() Result {
+	if g.bfs {
+		return g.bfsearch()
+	} else {
+		return g.dfsearch()
+	}
+}
+
+var dx = [4]int{1, 0, 0, -1}
+var dy = [4]int{0, 1, -1, 0}
+
+func (g *Game) bfsearch() Result {
+	n, queue := g.queue[0], g.queue[1:]
+	for i := 0; i < 4; i++ {
+		p := g.maze.Points[n.y+dy[i]][n.x+dx[i]]
+
+		if p.status == GOAL {
+			g.shortest()
+			return GOALED
+		}
+		if p.status == PATH {
+			p.status = VISITED
+			p.cost = g.maze.Points[n.y][n.x].cost + 1
+			g.queue = append(g.queue, p)
+			return NOTGOALED
+		}
+	}
+	g.queue = queue
+	return NOTGOALED
+}
+
+func (g *Game) dfsearch() Result {
+	n, stack := g.stack[0], g.stack[1:]
+	for i := 0; i < 4; i++ {
+		p := g.maze.Points[n.y+dy[i]][n.x+dx[i]]
+
+		if p.status == GOAL {
+			g.shortest()
+			return GOALED
+		}
+		if p.status == PATH {
+			p.status = VISITED
+			p.cost = g.maze.Points[n.y][n.x].cost + 1
+			g.stack = append([]*Point{p}, g.stack...)
+			return NOTGOALED
+		}
+	}
+	g.stack = stack
+	return NOTGOALED
+}
+
+func (g *Game) shortest() {
+	p := g.maze.Points[g.maze.Height-2][g.maze.Width-2] // from goal
+	for {
+		for i := 0; i < 4; i++ {
+			n := g.maze.Points[p.y+dy[i]][p.x+dx[i]]
+			if n.status == START {
+				p.status = ROUTE
+				g.display()
+				return
+			}
+
+			if n.status == VISITED && n.cost == p.cost-1 {
+				p.status = ROUTE
+				p = n
+				break
+			}
 		}
 	}
 }

@@ -10,6 +10,8 @@ const (
 	PATH = iota
 	WALL
 	CURRENT
+	VISITED // only used for search
+	ROUTE   // use finding shortest path
 	START
 	GOAL
 )
@@ -17,6 +19,7 @@ const (
 type Point struct {
 	x, y   int
 	status int
+	cost   int
 }
 
 type Maze struct {
@@ -28,7 +31,7 @@ type Maze struct {
 	Format  bool
 }
 
-func NewMaze(w int, h int, s bool, f bool) *Maze {
+func NewMaze(w int, h int, s bool, f bool, search bool) *Maze {
 	m := Maze{
 		Width:  w,
 		Height: h,
