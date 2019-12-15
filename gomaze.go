@@ -34,9 +34,13 @@ func startGame(width, height int, seed bool, format bool) (Result, int, int, err
 	w, h := s.Size()
 	m := NewMaze(w/2, h, seed, format, false)
 
+	ticker := time.NewTicker(time.Millisecond)
+	defer ticker.Stop()
+
 	game := Game{
 		screen: s,
 		maze:   m,
+		ticker: ticker,
 	}
 
 	res, err := game.Loop()

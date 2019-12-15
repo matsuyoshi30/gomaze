@@ -119,8 +119,10 @@ func (g *Game) Loop() (Result, error) {
 				}
 			}
 		case <-g.ticker.C:
-			if g.next() == GOALED {
-				return GOALED, nil
+			if g.bfs || g.dfs {
+				if g.next() == GOALED {
+					return GOALED, nil
+				}
 			}
 		}
 	}
