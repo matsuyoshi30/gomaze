@@ -63,17 +63,21 @@ func startSearch(width, height int, seed bool, format bool, bfs, dfs bool) (Resu
 	game := Game{
 		screen: s,
 		maze:   m,
+		bfs:    bfs,
+		dfs:    dfs,
 		ticker: ticker,
 	}
 
 	if bfs {
 		game.queue = make([]*Point, 0)
-	} else {
+	} else if dfs {
 		game.stack = make([]*Point, 0)
 	}
 
 	res, err := game.Loop()
-	time.Sleep(5 * time.Second) // TODO: not use time.Sleep, use input routine
+	if res == GOALED {
+		time.Sleep(5 * time.Second) // TODO: not use time.Sleep, use input routine
+	}
 
 	return res, err
 }
