@@ -10,6 +10,7 @@ const (
 	PATH = iota
 	WALL
 	CURRENT
+	VISITED // only used for search
 	START
 	GOAL
 )
@@ -28,7 +29,7 @@ type Maze struct {
 	Format  bool
 }
 
-func NewMaze(w int, h int, s bool, f bool) *Maze {
+func NewMaze(w int, h int, s bool, f bool, search bool) *Maze {
 	m := Maze{
 		Width:  w,
 		Height: h,

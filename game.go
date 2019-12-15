@@ -1,12 +1,19 @@
 package main
 
 import (
+	"time"
+
 	"github.com/gdamore/tcell"
 )
 
 type Game struct {
 	screen tcell.Screen
 	maze   *Maze
+	bfs    bool
+	dfs    bool
+	queue  []*Point
+	stack  []*Point
+	ticker *time.Ticker
 }
 
 var st = tcell.StyleDefault.Foreground(tcell.ColorWhite)
@@ -34,6 +41,9 @@ func (g *Game) display() {
 			} else if p.status == CURRENT {
 				g.screen.SetContent(j*2, i, '@', nil, st)
 				g.screen.SetContent(j*2+1, i, '@', nil, st)
+			} else if p.status == VISITED {
+				g.screen.SetContent(j*2, i, '#', nil, st)
+				g.screen.SetContent(j*2+1, i, '#', nil, st)
 			} else {
 				g.screen.SetContent(j*2, i, path, nil, st)
 				g.screen.SetContent(j*2+1, i, path, nil, st)
@@ -59,11 +69,22 @@ type Result int
 const (
 	GOALED Result = iota
 	STOPPED
+	NOTGOALED
 )
 
 func (g *Game) Loop() (Result, error) {
 	e := make(chan Event)
 	go input(g.screen, e)
+
+	if g.bfs {
+		g.queue = make([]*Point, 0)
+		g.queue = append(g.queue, g.maze.Points[1][1])
+		g.maze.Points[1][1].status = VISITED
+	} else {
+		g.stack = make([]*Point, 0)
+		g.stack = append(g.stack, g.maze.Points[1][1])
+		g.maze.Points[1][1].status = VISITED
+	}
 
 	for {
 		g.display()
@@ -92,6 +113,10 @@ func (g *Game) Loop() (Result, error) {
 				if g.maze.CheckMaze(DOWN) {
 					g.maze.MoveCurrent(DOWN)
 				}
+			}
+		case <-g.ticker.C:
+			if g.next() == GOALED {
+				return GOALED, nil
 			}
 		}
 	}
@@ -122,4 +147,47 @@ func input(s tcell.Screen, e chan<- Event) {
 			continue
 		}
 	}
+}
+
+func (g *Game) next() Result {
+	if g.bfs {
+		return g.bfsearch()
+	} else {
+		return g.dfsearch()
+	}
+}
+
+var dx = [4]int{1, -1, 0, 0}
+var dy = [4]int{0, 0, 1, -1}
+
+func (g *Game) bfsearch() Result {
+	n, queue := g.queue[0], g.queue[1:]
+	for i := 0; i < 4; i++ {
+		if g.maze.Points[n.y+dy[i]][n.x+dx[i]].status == GOAL {
+			return GOALED
+		}
+		if g.maze.Points[n.y+dy[i]][n.x+dx[i]].status == PATH {
+			g.maze.Points[n.y+dy[i]][n.x+dx[i]].status = VISITED
+			g.queue = append(g.queue, g.maze.Points[n.y+dy[i]][n.x+dx[i]])
+			return NOTGOALED
+		}
+	}
+	g.queue = queue
+	return NOTGOALED
+}
+
+func (g *Game) dfsearch() Result {
+	n, stack := g.stack[0], g.stack[1:]
+	for i := 0; i < 4; i++ {
+		if g.maze.Points[n.y+dy[i]][n.x+dx[i]].status == GOAL {
+			return GOALED
+		}
+		if g.maze.Points[n.y+dy[i]][n.x+dx[i]].status == PATH {
+			g.maze.Points[n.y+dy[i]][n.x+dx[i]].status = VISITED
+			g.stack = append([]*Point{g.maze.Points[n.y+dy[i]][n.x+dx[i]]}, g.stack...)
+			return NOTGOALED
+		}
+	}
+	g.stack = stack
+	return NOTGOALED
 }

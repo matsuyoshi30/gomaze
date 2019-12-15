@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -31,7 +32,7 @@ func startGame(width, height int, seed bool, format bool) (Result, int, int, err
 	defer s.Fini()
 
 	w, h := s.Size()
-	m := NewMaze(w/2, h, seed, format)
+	m := NewMaze(w/2, h, seed, format, false)
 
 	game := Game{
 		screen: s,
@@ -40,6 +41,31 @@ func startGame(width, height int, seed bool, format bool) (Result, int, int, err
 
 	res, err := game.Loop()
 	return res, w / 2, h, err
+}
+
+func startSearch(width, height int, seed bool, format bool, bfs, dfs bool) (Result, error) {
+	s, err := initScreen()
+	if err != nil {
+		return STOPPED, err
+	}
+	defer s.Fini()
+
+	w, h := s.Size()
+	m := NewMaze(w/2, h, seed, format, true)
+
+	ticker := time.NewTicker(10 * time.Millisecond)
+	defer ticker.Stop()
+
+	game := Game{
+		screen: s,
+		maze:   m,
+		bfs:    bfs,
+		dfs:    dfs,
+		ticker: ticker,
+	}
+
+	res, err := game.Loop()
+	return res, err
 }
 
 func main() {
@@ -71,6 +97,14 @@ func main() {
 			Usage: "Format output bold",
 		},
 		&cli.BoolFlag{
+			Name:  "bfs",
+			Usage: "Show breadth first search",
+		},
+		&cli.BoolFlag{
+			Name:  "dfs",
+			Usage: "Show depth first search",
+		},
+		&cli.BoolFlag{
 			Name: "debug",
 		},
 	}
@@ -95,6 +129,9 @@ func main() {
 		sc := c.Bool("screen")
 		wi := c.Bool("format")
 
+		bfs := c.Bool("bfs")
+		dfs := c.Bool("dfs")
+
 		if sc {
 			start := time.Now()
 			res, w, h, err := startGame(tw, th, se, wi)
@@ -110,8 +147,26 @@ func main() {
 			}
 
 			return nil
+		} else if bfs || dfs {
+			if bfs && dfs {
+				return errors.New("only choose one whether bfs or dfs")
+			}
+
+			start := time.Now()
+			res, err := startSearch(tw, th, se, wi, bfs, dfs)
+			if err != nil {
+				return err
+			}
+			end := time.Now()
+
+			if res == GOALED {
+				fmt.Println("Search complete!")
+				fmt.Printf("[Search time] %s\n", end.Sub(start))
+			}
+
+			return nil
 		} else {
-			m := NewMaze(tw, th, se, wi)
+			m := NewMaze(tw, th, se, wi, false)
 			m.printMaze()
 
 			return nil
