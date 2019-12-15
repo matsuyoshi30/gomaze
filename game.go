@@ -17,6 +17,7 @@ type Game struct {
 }
 
 var st = tcell.StyleDefault.Foreground(tcell.ColorWhite)
+var ans = tcell.StyleDefault.Foreground(tcell.ColorLightGreen)
 
 func (g *Game) display() {
 	g.screen.Clear()
@@ -44,6 +45,9 @@ func (g *Game) display() {
 			} else if p.status == VISITED {
 				g.screen.SetContent(j*2, i, '#', nil, st)
 				g.screen.SetContent(j*2+1, i, '#', nil, st)
+			} else if p.status == ROUTE {
+				g.screen.SetContent(j*2, i, '#', nil, ans)
+				g.screen.SetContent(j*2+1, i, '#', nil, ans)
 			} else {
 				g.screen.SetContent(j*2, i, path, nil, st)
 				g.screen.SetContent(j*2+1, i, path, nil, st)
@@ -79,9 +83,11 @@ func (g *Game) Loop() (Result, error) {
 	if g.bfs {
 		g.queue = append(g.queue, g.maze.Points[1][1])
 		g.maze.Points[1][1].status = VISITED
+		g.maze.Points[1][1].cost = 1
 	} else {
 		g.stack = append(g.stack, g.maze.Points[1][1])
 		g.maze.Points[1][1].status = VISITED
+		g.maze.Points[1][1].cost = 1
 	}
 
 	for {
@@ -164,10 +170,12 @@ func (g *Game) bfsearch() Result {
 		p := g.maze.Points[n.y+dy[i]][n.x+dx[i]]
 
 		if p.status == GOAL {
+			g.shortest()
 			return GOALED
 		}
 		if p.status == PATH {
 			p.status = VISITED
+			p.cost = g.maze.Points[n.y][n.x].cost + 1
 			g.queue = append(g.queue, p)
 			return NOTGOALED
 		}
@@ -182,14 +190,36 @@ func (g *Game) dfsearch() Result {
 		p := g.maze.Points[n.y+dy[i]][n.x+dx[i]]
 
 		if p.status == GOAL {
+			g.shortest()
 			return GOALED
 		}
 		if p.status == PATH {
 			p.status = VISITED
+			p.cost = g.maze.Points[n.y][n.x].cost + 1
 			g.stack = append([]*Point{p}, g.stack...)
 			return NOTGOALED
 		}
 	}
 	g.stack = stack
 	return NOTGOALED
+}
+
+func (g *Game) shortest() {
+	p := g.maze.Points[g.maze.Height-2][g.maze.Width-2] // from goal
+	for {
+		for i := 0; i < 4; i++ {
+			n := g.maze.Points[p.y+dy[i]][p.x+dx[i]]
+			if n.status == START {
+				p.status = ROUTE
+				g.display()
+				return
+			}
+
+			if n.status == VISITED && n.cost == p.cost-1 {
+				p.status = ROUTE
+				p = n
+				break
+			}
+		}
+	}
 }

@@ -11,6 +11,7 @@ const (
 	WALL
 	CURRENT
 	VISITED // only used for search
+	ROUTE   // use finding shortest path
 	START
 	GOAL
 )
@@ -18,6 +19,7 @@ const (
 type Point struct {
 	x, y   int
 	status int
+	cost   int
 }
 
 type Maze struct {

@@ -69,6 +69,8 @@ func startSearch(width, height int, seed bool, format bool, bfs, dfs bool) (Resu
 	}
 
 	res, err := game.Loop()
+	time.Sleep(5 * time.Second) // TODO: not use time.Sleep, use input routine
+
 	return res, err
 }
 
