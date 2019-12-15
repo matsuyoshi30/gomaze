@@ -59,9 +59,13 @@ func startSearch(width, height int, seed bool, format bool, bfs, dfs bool) (Resu
 	game := Game{
 		screen: s,
 		maze:   m,
-		bfs:    bfs,
-		dfs:    dfs,
 		ticker: ticker,
+	}
+
+	if bfs {
+		game.queue = make([]*Point, 0)
+	} else {
+		game.stack = make([]*Point, 0)
 	}
 
 	res, err := game.Loop()

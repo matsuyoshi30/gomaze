@@ -77,11 +77,9 @@ func (g *Game) Loop() (Result, error) {
 	go input(g.screen, e)
 
 	if g.bfs {
-		g.queue = make([]*Point, 0)
 		g.queue = append(g.queue, g.maze.Points[1][1])
 		g.maze.Points[1][1].status = VISITED
 	} else {
-		g.stack = make([]*Point, 0)
 		g.stack = append(g.stack, g.maze.Points[1][1])
 		g.maze.Points[1][1].status = VISITED
 	}
@@ -157,18 +155,20 @@ func (g *Game) next() Result {
 	}
 }
 
-var dx = [4]int{1, -1, 0, 0}
-var dy = [4]int{0, 0, 1, -1}
+var dx = [4]int{1, 0, 0, -1}
+var dy = [4]int{0, 1, -1, 0}
 
 func (g *Game) bfsearch() Result {
 	n, queue := g.queue[0], g.queue[1:]
 	for i := 0; i < 4; i++ {
-		if g.maze.Points[n.y+dy[i]][n.x+dx[i]].status == GOAL {
+		p := g.maze.Points[n.y+dy[i]][n.x+dx[i]]
+
+		if p.status == GOAL {
 			return GOALED
 		}
-		if g.maze.Points[n.y+dy[i]][n.x+dx[i]].status == PATH {
-			g.maze.Points[n.y+dy[i]][n.x+dx[i]].status = VISITED
-			g.queue = append(g.queue, g.maze.Points[n.y+dy[i]][n.x+dx[i]])
+		if p.status == PATH {
+			p.status = VISITED
+			g.queue = append(g.queue, p)
 			return NOTGOALED
 		}
 	}
@@ -179,12 +179,14 @@ func (g *Game) bfsearch() Result {
 func (g *Game) dfsearch() Result {
 	n, stack := g.stack[0], g.stack[1:]
 	for i := 0; i < 4; i++ {
-		if g.maze.Points[n.y+dy[i]][n.x+dx[i]].status == GOAL {
+		p := g.maze.Points[n.y+dy[i]][n.x+dx[i]]
+
+		if p.status == GOAL {
 			return GOALED
 		}
-		if g.maze.Points[n.y+dy[i]][n.x+dx[i]].status == PATH {
-			g.maze.Points[n.y+dy[i]][n.x+dx[i]].status = VISITED
-			g.stack = append([]*Point{g.maze.Points[n.y+dy[i]][n.x+dx[i]]}, g.stack...)
+		if p.status == PATH {
+			p.status = VISITED
+			g.stack = append([]*Point{p}, g.stack...)
 			return NOTGOALED
 		}
 	}
