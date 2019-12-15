@@ -58,4 +58,8 @@ S       ||      ||  ||
 
 You can play the maze with `--screen` and use arrow keys.
 
-![](./_resource/sample.gif)
+![](./_resource/screen.gif)
+
+You can see the maze solution with `--bfs` or `--dfs`.
+
+![](./_resource/bfs.gif)

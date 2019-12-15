@@ -84,7 +84,7 @@ func (g *Game) Loop() (Result, error) {
 		g.queue = append(g.queue, g.maze.Points[1][1])
 		g.maze.Points[1][1].status = VISITED
 		g.maze.Points[1][1].cost = 1
-	} else {
+	} else if g.dfs {
 		g.stack = append(g.stack, g.maze.Points[1][1])
 		g.maze.Points[1][1].status = VISITED
 		g.maze.Points[1][1].cost = 1
@@ -119,8 +119,10 @@ func (g *Game) Loop() (Result, error) {
 				}
 			}
 		case <-g.ticker.C:
-			if g.next() == GOALED {
-				return GOALED, nil
+			if g.bfs || g.dfs {
+				if g.next() == GOALED {
+					return GOALED, nil
+				}
 			}
 		}
 	}
